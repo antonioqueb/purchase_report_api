@@ -36,29 +36,57 @@ def download_excel():
     workbook = xlsxwriter.Workbook(output, {'in_memory': True})
     worksheet = workbook.add_worksheet('Reporte')
 
-    # Estilos
-    bold = workbook.add_format({'bold': True})
-    header_format = workbook.add_format({'bold': True, 'bg_color': '#DDDDDD', 'border': 1})
-    cell_format = workbook.add_format({'border': 1})
-    title_format = workbook.add_format({'bold': True, 'bg_color': '#B7DEE8', 'border': 1})
+    # Estilos ajustados coherentes con HTML
+    title_format = workbook.add_format({
+        'bold': True, 
+        'bg_color': '#0f2385',  # Color primario
+        'font_color': '#FFFFFF',
+        'border': 1,
+        'align': 'center',
+        'valign': 'vcenter'
+    })
+
+    header_format = workbook.add_format({
+        'bold': True, 
+        'bg_color': '#4d9c28',  # Color secundario
+        'font_color': '#FFFFFF',
+        'border': 1,
+        'align': 'center',
+        'valign': 'vcenter'
+    })
+
+    cell_format = workbook.add_format({
+        'border': 1,
+        'valign': 'vcenter'
+    })
+
+    date_format = workbook.add_format({
+        'border': 1,
+        'valign': 'vcenter',
+        'num_format': 'dd/mm/yyyy'
+    })
 
     row = 0
     for producto in data:
-        # Título del producto
-        worksheet.merge_range(row, 0, row, 8, f"{producto['producto']} (Unidad: {producto['unidad']})", title_format)
+        # Título del producto con colores corporativos
+        worksheet.merge_range(row, 0, row, 7, f"{producto['producto']} (Unidad: {producto['unidad']})", title_format)
         row += 1
 
-        # Encabezado
-        headers = ['Orden de Compra', 'Proveedor', 'Fecha', 'Comprador', 'Planta', 'Cantidad Demandada', 'Cantidad Recepcionada', 'Cantidad Pendiente']
+        # Encabezados
+        headers = ['Orden de Compra', 'Proveedor', 'Fecha', 'Comprador', 'Planta',
+                   'Cantidad Demandada', 'Cantidad Recepcionada', 'Cantidad Pendiente']
         for col, header in enumerate(headers):
             worksheet.write(row, col, header, header_format)
         row += 1
 
-        # Filas por orden
+        # Datos de órdenes
         for orden in producto['ordenes']:
             worksheet.write(row, 0, orden['orden_compra'], cell_format)
             worksheet.write(row, 1, orden['proveedor'], cell_format)
-            worksheet.write(row, 2, orden['fecha_orden'], cell_format)
+            
+            # Formato de fecha
+            worksheet.write_datetime(row, 2, datetime.strptime(orden['fecha_orden'], '%Y-%m-%d'), date_format)
+            
             worksheet.write(row, 3, orden['comprador'], cell_format)
             worksheet.write(row, 4, orden['planta'], cell_format)
             worksheet.write_number(row, 5, orden['cantidad_demandada'], cell_format)
@@ -68,6 +96,14 @@ def download_excel():
 
         # Espacio entre productos
         row += 1
+
+    # Ajuste automático de columnas para mejorar presentación
+    worksheet.set_column('A:A', 20)  # Orden de compra
+    worksheet.set_column('B:B', 25)  # Proveedor
+    worksheet.set_column('C:C', 15)  # Fecha
+    worksheet.set_column('D:D', 20)  # Comprador
+    worksheet.set_column('E:E', 15)  # Planta
+    worksheet.set_column('F:H', 20)  # Cantidades numéricas
 
     workbook.close()
     output.seek(0)
