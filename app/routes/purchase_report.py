@@ -86,7 +86,8 @@ def download_excel():
             worksheet.write(row, 1, orden['proveedor'], cell_format)
             
             # Formato de fecha
-            worksheet.write_datetime(row, 2, datetime.strptime(orden['fecha_orden'], '%Y-%m-%d'), date_format)
+            fecha_completa = datetime.strptime(orden['fecha_orden'], '%Y-%m-%d %H:%M:%S')
+worksheet.write_datetime(row, 2, fecha_completa, date_format)
             
             worksheet.write(row, 3, orden['comprador'], cell_format)
             worksheet.write(row, 4, orden['planta'], cell_format)
