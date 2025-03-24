@@ -30,26 +30,46 @@ def download_excel():
     end = request.args.get('end')
     data = get_partial_and_unreceived_purchase_lines(start, end)
 
-    rows = []
-    for producto in data:
-        for orden in producto['ordenes']:
-            rows.append({
-                'Producto': producto['producto'],
-                'Unidad': producto['unidad'],
-                'Orden de Compra': orden['orden_compra'],
-                'Proveedor': orden['proveedor'],
-                'Fecha de Orden': orden['fecha_orden'],
-                'Comprador': orden['comprador'],
-                'Planta': orden['planta'],
-                'Cantidad Demandada': orden['cantidad_demandada'],
-                'Cantidad Recepcionada': orden['cantidad_recepcionada'],
-                'Cantidad Pendiente': orden['cantidad_pendiente']
-            })
-
-    df = pd.DataFrame(rows)
     output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='Reporte')
+
+    import xlsxwriter
+    workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+    worksheet = workbook.add_worksheet('Reporte')
+
+    # Estilos
+    bold = workbook.add_format({'bold': True})
+    header_format = workbook.add_format({'bold': True, 'bg_color': '#DDDDDD', 'border': 1})
+    cell_format = workbook.add_format({'border': 1})
+    title_format = workbook.add_format({'bold': True, 'bg_color': '#B7DEE8', 'border': 1})
+
+    row = 0
+    for producto in data:
+        # Título del producto
+        worksheet.merge_range(row, 0, row, 8, f"Producto: {producto['producto']} (Unidad: {producto['unidad']})", title_format)
+        row += 1
+
+        # Encabezado
+        headers = ['Orden de Compra', 'Proveedor', 'Fecha', 'Comprador', 'Planta', 'Cantidad Demandada', 'Cantidad Recepcionada', 'Cantidad Pendiente']
+        for col, header in enumerate(headers):
+            worksheet.write(row, col, header, header_format)
+        row += 1
+
+        # Filas por orden
+        for orden in producto['ordenes']:
+            worksheet.write(row, 0, orden['orden_compra'], cell_format)
+            worksheet.write(row, 1, orden['proveedor'], cell_format)
+            worksheet.write(row, 2, orden['fecha_orden'], cell_format)
+            worksheet.write(row, 3, orden['comprador'], cell_format)
+            worksheet.write(row, 4, orden['planta'], cell_format)
+            worksheet.write_number(row, 5, orden['cantidad_demandada'], cell_format)
+            worksheet.write_number(row, 6, orden['cantidad_recepcionada'], cell_format)
+            worksheet.write_number(row, 7, orden['cantidad_pendiente'], cell_format)
+            row += 1
+
+        # Espacio entre productos
+        row += 1
+
+    workbook.close()
     output.seek(0)
 
     return send_file(output, download_name='reporte_compras.xlsx', as_attachment=True)
