@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, render_template, send_file, redir
 from app.services.odoo_service import get_partial_and_unreceived_purchase_lines
 import pandas as pd
 from io import BytesIO
+from datetime import datetime
 
 purchase_report_bp = Blueprint('purchase_report', __name__)
 
