@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Compras - Materias Primas</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; font-size: 14px; }
+        th { background-color: #eee; }
+        form { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Reporte de Compras - Materias Primas</h2>
+    <form method="post">
+        <label>Fecha inicio: <input type="date" name="start_date" required value="{{ start }}"></label>
+        <label>Fecha fin: <input type="date" name="end_date" required value="{{ end }}"></label>
+        <button type="submit">Consultar</button>
+        {% if data %}
+        <a href="{{ url_for('purchase_report.download_excel', start=start, end=end) }}">
+            <button type="button">Exportar a Excel</button>
+        </a>
+        {% endif %}
+    </form>
+
+    {% if data %}
+        {% for producto in data %}
+            <h3>Producto: {{ producto.producto }} (Unidad: {{ producto.unidad }})</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Orden</th><th>Proveedor</th><th>Fecha</th>
+                        <th>Comprador</th><th>Planta</th>
+                        <th>Demandada</th><th>Recepcionada</th><th>Pendiente</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for orden in producto.ordenes %}
+                    <tr>
+                        <td>{{ orden.orden_compra }}</td>
+                        <td>{{ orden.proveedor }}</td>
+                        <td>{{ orden.fecha_orden }}</td>
+                        <td>{{ orden.comprador }}</td>
+                        <td>{{ orden.planta }}</td>
+                        <td>{{ orden.cantidad_demandada }}</td>
+                        <td>{{ orden.cantidad_recepcionada }}</td>
+                        <td>{{ orden.cantidad_pendiente }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    {% elif start and end %}
+        <p><strong>No se encontraron datos para el rango indicado.</strong></p>
+    {% endif %}
+</body>
+</html>
