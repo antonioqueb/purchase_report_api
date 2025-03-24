@@ -3,55 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <title>Reporte de Compras - Materias Primas</title>
-    <style>
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; font-size: 14px; }
-        th { background-color: #eee; }
-        form { margin-bottom: 20px; }
-    </style>
 </head>
-<body>
-    <h2>Reporte de Compras - Materias Primas</h2>
-    <form method="post">
-        <label>Fecha inicio: <input type="date" name="start_date" required value="{{ start }}"></label>
-        <label>Fecha fin: <input type="date" name="end_date" required value="{{ end }}"></label>
-        <button type="submit">Consultar</button>
+<body style="font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9;">
+
+    <h2 style="color: #0f2385; border-bottom: 2px solid #4d9c28; padding-bottom: 10px;">Reporte de Compras - Materias Primas</h2>
+
+    <form method="post" style="background-color: #ffffff; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <label style="margin-right: 20px; font-weight: bold; color: #0f2385;">
+            Fecha inicio:
+            <input type="date" name="start_date" required value="{{ start }}" style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+        </label>
+
+        <label style="margin-right: 20px; font-weight: bold; color: #0f2385;">
+            Fecha fin:
+            <input type="date" name="end_date" required value="{{ end }}" style="padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+        </label>
+
+        <button type="submit" style="padding: 6px 12px; background-color: #0f2385; color: #ffffff; border: none; border-radius: 4px; cursor: pointer;">
+            Consultar
+        </button>
+
         {% if data %}
-        <a href="{{ url_for('purchase_report.download_excel', start=start, end=end) }}">
-            <button type="button">Exportar a Excel</button>
+        <a href="{{ url_for('purchase_report.download_excel', start=start, end=end) }}" style="text-decoration: none;">
+            <button type="button" style="padding: 6px 12px; background-color: #4d9c28; color: #ffffff; border: none; border-radius: 4px; cursor: pointer;">
+                Exportar a Excel
+            </button>
         </a>
         {% endif %}
     </form>
 
     {% if data %}
         {% for producto in data %}
-            <h3>Producto: {{ producto.producto }} (Unidad: {{ producto.unidad }})</h3>
-            <table>
+            <h3 style="color: #0f2385; margin-top: 30px;">{{ producto.producto }} <span style="font-size: 0.9em; color: #555;">(Unidad: {{ producto.unidad }})</span></h3>
+
+            <table style="border-collapse: collapse; width: 100%; margin-top: 10px;">
                 <thead>
                     <tr>
-                        <th>Orden</th><th>Proveedor</th><th>Fecha</th>
-                        <th>Comprador</th><th>Planta</th>
-                        <th>Demandada</th><th>Recepcionada</th><th>Pendiente</th>
+                        <th style="border: 1px solid #0f2385; background-color: #0f2385; color: #ffffff; padding: 8px;">Orden</th>
+                        <th style="border: 1px solid #0f2385; background-color: #0f2385; color: #ffffff; padding: 8px;">Proveedor</th>
+                        <th style="border: 1px solid #0f2385; background-color: #0f2385; color: #ffffff; padding: 8px;">Fecha</th>
+                        <th style="border: 1px solid #0f2385; background-color: #0f2385; color: #ffffff; padding: 8px;">Comprador</th>
+                        <th style="border: 1px solid #0f2385; background-color: #0f2385; color: #ffffff; padding: 8px;">Planta</th>
+                        <th style="border: 1px solid #0f2385; background-color: #0f2385; color: #ffffff; padding: 8px;">Demandada</th>
+                        <th style="border: 1px solid #0f2385; background-color: #0f2385; color: #ffffff; padding: 8px;">Recepcionada</th>
+                        <th style="border: 1px solid #0f2385; background-color: #0f2385; color: #ffffff; padding: 8px;">Pendiente</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for orden in producto.ordenes %}
                     <tr>
-                        <td>{{ orden.orden_compra }}</td>
-                        <td>{{ orden.proveedor }}</td>
-                        <td>{{ orden.fecha_orden }}</td>
-                        <td>{{ orden.comprador }}</td>
-                        <td>{{ orden.planta }}</td>
-                        <td>{{ orden.cantidad_demandada }}</td>
-                        <td>{{ orden.cantidad_recepcionada }}</td>
-                        <td>{{ orden.cantidad_pendiente }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{{ orden.orden_compra }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{{ orden.proveedor }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{{ orden.fecha_orden }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{{ orden.comprador }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{{ orden.planta }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{{ orden.cantidad_demandada }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{{ orden.cantidad_recepcionada }}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">{{ orden.cantidad_pendiente }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         {% endfor %}
     {% elif start and end %}
-        <p><strong>No se encontraron datos para el rango indicado.</strong></p>
+        <p style="color: #cc0000; margin-top: 20px;"><strong>No se encontraron datos para el rango indicado.</strong></p>
     {% endif %}
+
 </body>
 </html>

@@ -45,7 +45,7 @@ def download_excel():
     row = 0
     for producto in data:
         # Título del producto
-        worksheet.merge_range(row, 0, row, 8, f"Producto: {producto['producto']} (Unidad: {producto['unidad']})", title_format)
+        worksheet.merge_range(row, 0, row, 8, f"{producto['producto']} (Unidad: {producto['unidad']})", title_format)
         row += 1
 
         # Encabezado
