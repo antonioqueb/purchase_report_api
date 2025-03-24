@@ -18,7 +18,7 @@ def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
         [[('name', '=', 'Materias Primas')]])
 
     if not parent_category_ids:
-        return []  # no hay categoría, evitar procesamiento
+        return []
 
     parent_id = parent_category_ids[0]
 
@@ -26,8 +26,7 @@ def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
     all_category_ids = models.execute_kw(db, uid, password,
         'product.category', 'search',
         [[('parent_path', 'ilike', f'{parent_id}/')]])
-
-    all_category_ids.append(parent_id)  # incluir también el padre
+    all_category_ids.append(parent_id)
 
     # 3. Buscar líneas de orden de compra en rango de fechas
     domain = [
@@ -47,26 +46,27 @@ def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
         qty_demandada = line['product_qty']
         qty_recepcionada = line['qty_received']
         if qty_recepcionada >= qty_demandada:
-            continue  # ya fue completamente recepcionado
+            continue
 
         product_id = line['product_id'][0]
         product_name = line['product_id'][1]
 
-        # 4. Leer categoría del producto
+        # Leer categoría del producto
         product_info = models.execute_kw(db, uid, password,
             'product.product', 'read',
             [product_id], {'fields': ['categ_id']})[0]
 
         product_category_id = product_info['categ_id'][0]
-
         if product_category_id not in all_category_ids:
-            continue  # el producto no pertenece a "Materias Primas"
+            continue
 
         uom = line['product_uom'][1]
 
+        # Leer información completa de la orden incluyendo planta y comprador
         order = models.execute_kw(db, uid, password,
             'purchase.order', 'read',
-            [line['order_id'][0]], {'fields': ['name', 'partner_id', 'date_order']})[0]
+            [line['order_id'][0]],
+            {'fields': ['name', 'partner_id', 'date_order', 'user_id', 'planta']})[0]
 
         qty_pendiente = round(qty_demandada - qty_recepcionada, 2)
 
@@ -88,6 +88,8 @@ def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
             'orden_compra': order['name'],
             'proveedor': order['partner_id'][1],
             'fecha_orden': order['date_order'],
+            'comprador': order['user_id'][1] if order['user_id'] else None,
+            'planta': order['planta'][1] if order['planta'] else None,
             'cantidad_demandada': qty_demandada,
             'cantidad_recepcionada': qty_recepcionada,
             'cantidad_pendiente': qty_pendiente
