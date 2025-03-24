@@ -5,7 +5,7 @@ services:
     build: .
     container_name: purchase_report_api
     ports:
-      - "3012:5000"
+      - "4040:7000"
     env_file:
       - .env
     restart: always
