@@ -14,8 +14,7 @@ def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
     domain = [
         ('state', 'in', ['purchase', 'done']),
         ('order_id.date_order', '>=', start_date),
-        ('order_id.date_order', '<=', end_date),
-        ('qty_received', '<', 'product_qty')  # incluye qty_received = 0 y parcialmente recibidas
+        ('order_id.date_order', '<=', end_date)
     ]
 
     fields = ['order_id', 'product_id', 'product_qty', 'qty_received', 'product_uom']
@@ -26,6 +25,11 @@ def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
     product_data = {}
 
     for line in lines:
+        qty_demandada = line['product_qty']
+        qty_recepcionada = line['qty_received']
+        if qty_recepcionada >= qty_demandada:
+            continue  # filtra los que ya están totalmente recepcionados
+
         product_id = line['product_id'][0]
         product_name = line['product_id'][1]
         uom = line['product_uom'][1]
@@ -34,8 +38,6 @@ def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
             'purchase.order', 'read',
             [line['order_id'][0]], {'fields': ['name', 'partner_id', 'date_order']})[0]
 
-        qty_demandada = line['product_qty']
-        qty_recepcionada = line['qty_received']
         qty_pendiente = round(qty_demandada - qty_recepcionada, 2)
 
         if product_id not in product_data:
