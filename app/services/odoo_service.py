@@ -10,7 +10,26 @@ common = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/common")
 uid = common.authenticate(db, user, password, {})
 models = xmlrpc.client.ServerProxy(f"{url}/xmlrpc/2/object")
 
+
 def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
+    # 1. Buscar ID de la categoría padre "Materias Primas"
+    parent_category_ids = models.execute_kw(db, uid, password,
+        'product.category', 'search',
+        [[('name', '=', 'Materias Primas')]])
+
+    if not parent_category_ids:
+        return []  # no hay categoría, evitar procesamiento
+
+    parent_id = parent_category_ids[0]
+
+    # 2. Obtener IDs de todas las subcategorías
+    all_category_ids = models.execute_kw(db, uid, password,
+        'product.category', 'search',
+        [[('parent_path', 'ilike', f'{parent_id}/')]])
+
+    all_category_ids.append(parent_id)  # incluir también el padre
+
+    # 3. Buscar líneas de orden de compra en rango de fechas
     domain = [
         ('state', 'in', ['purchase', 'done']),
         ('order_id.date_order', '>=', start_date),
@@ -28,10 +47,21 @@ def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
         qty_demandada = line['product_qty']
         qty_recepcionada = line['qty_received']
         if qty_recepcionada >= qty_demandada:
-            continue  # filtra los que ya están totalmente recepcionados
+            continue  # ya fue completamente recepcionado
 
         product_id = line['product_id'][0]
         product_name = line['product_id'][1]
+
+        # 4. Leer categoría del producto
+        product_info = models.execute_kw(db, uid, password,
+            'product.product', 'read',
+            [product_id], {'fields': ['categ_id']})[0]
+
+        product_category_id = product_info['categ_id'][0]
+
+        if product_category_id not in all_category_ids:
+            continue  # el producto no pertenece a "Materias Primas"
+
         uom = line['product_uom'][1]
 
         order = models.execute_kw(db, uid, password,
