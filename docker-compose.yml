@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  purchase_report_api:
+    build: .
+    container_name: purchase_report_api
+    ports:
+      - "8000:5000"
+    env_file:
+      - .env
+    restart: always
