@@ -6,6 +6,18 @@ db = os.getenv("ODOO_DB")
 user = os.getenv("ODOO_USER")
 password = os.getenv("ODOO_PASSWORD")
 
+# Diccionario de valores del campo `planta` para traducción
+PLANTA_LABELS = {
+    'none': 'Selecciona Planta...',
+    'planta_1': 'Planta 1',
+    'planta_2': 'Planta 2',
+    'planta_3': 'Planta 3',
+    'planta_4': 'Planta 4',
+    'planta_5': 'Planta 5',
+    'planta_6': 'Planta 6',
+    'planta_7': 'Planta 7',
+}
+
 
 def get_connection():
     try:
@@ -81,6 +93,9 @@ def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
 
             qty_pendiente = round(qty_demandada - qty_recepcionada, 2)
 
+            planta_val = order.get('planta')
+            planta_label = PLANTA_LABELS.get(planta_val, f'Valor desconocido ({planta_val})')
+
             if product_id not in product_data:
                 product_data[product_id] = {
                     'producto': product_name,
@@ -100,7 +115,7 @@ def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
                 'proveedor': order['partner_id'][1],
                 'fecha_orden': order['date_order'],
                 'comprador': order['user_id'][1] if order['user_id'] else None,
-                'planta': order['planta'][1] if order['planta'] else None,
+                'planta': planta_label,
                 'cantidad_demandada': qty_demandada,
                 'cantidad_recepcionada': qty_recepcionada,
                 'cantidad_pendiente': qty_pendiente
@@ -109,5 +124,4 @@ def get_partial_and_unreceived_purchase_lines(start_date: str, end_date: str):
         return list(product_data.values())
 
     except Exception as e:
-        # Puedes loguear esto o devolverlo a la vista según lo manejes
         raise RuntimeError(f"Error obteniendo líneas de compra: {str(e)}")
